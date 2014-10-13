@@ -32,15 +32,9 @@ class Supyoer
     found_supyoers = Supyoer.all(:phone_hash => phone_hash_array)
     found_supyoers.each do |supyoer|
       f = Friendship.new
-
       f.first_supyoer_id  = self.id
       f.second_supyoer_id = supyoer.id
-
-      if f.save
-        puts "Friendship saved"
-      else
-        puts "Friendship not saved"
-      end
+      f.save
     end
 
     found_supyoers.map {|s| s.returned_supyoer_hash}
