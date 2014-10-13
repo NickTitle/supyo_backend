@@ -4,6 +4,7 @@ migration 1, :create_supyoers do
       column :id, Integer, :serial => true
       column :name, DataMapper::Property::String, :length => 255
       column :email, DataMapper::Property::String, :length => 255
+      column :password_hash, DataMapper::Property::String, :length => 255
       column :phone_hash, DataMapper::Property::String, :length => 255
       column :last_location_lat, DataMapper::Property::Float
       column :last_location_long, DataMapper::Property::Float

@@ -5,6 +5,10 @@ module Supyo
 
     enable :sessions
 
+    set :protection, true
+    set :protect_from_csrf, true
+    set :allow_disabled_csrf, true
+
     ##
     # Caching support.
     #
