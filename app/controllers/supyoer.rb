@@ -61,8 +61,16 @@ Supyo::App.controllers :supyoer do
     @supyoer = Supyoer.get(params[:id].to_i)
     content_type :json
     unless @supyoer == nil
-      @supyoer.following.map{|f| [f.id, f.name] }.to_json
+      @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
     end
   end
   
+  get :updates, :with => [:id, :time] do
+    @supyoer = Supyoer.get(params[:id].to_i)
+    content_type :json
+    unless @supyoer == nil
+      @supyoer.conversations.select{|c| c.created_at > Time.parse(params[:time])}.to_json
+    end
+  end
+
 end
