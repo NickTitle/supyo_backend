@@ -50,8 +50,11 @@ Supyo::App.controllers :supyoer do
     end
   end
 
+  #
+  # return Array<[contact id, contact id]>
+  #
   post :update_contacts, :with => :id,  :csrf_protection => false do
-    @phone_hash_array   = JSON.parse(request.body.read)
+    @phone_hash_array = JSON.parse(request.body.read)
 
     @supyoer = Supyoer.get(params[:id].to_i)
     @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array)
@@ -65,12 +68,41 @@ Supyo::App.controllers :supyoer do
     end
   end
   
-  get :updates, :with => [:id, :time] do
+  get :conversations, :with => :id do
     @supyoer = Supyoer.get(params[:id].to_i)
     content_type :json
     unless @supyoer == nil
-      @supyoer.conversations.select{|c| c.created_at > Time.parse(params[:time])}.to_json
+      @supyoer.conversations.select{|c| c.created_at > DateTime.now-2}.to_json
     end
+  end
+
+  post :conversation, :csrf_protection => false do
+
+    c = Conversation.new
+
+    puts Supyoer.get(params[:id])
+    puts params
+    @first_supyoer = Supyoer.get(params[:id])
+    @second_supyoer = Supyoer.get(params[:recipient])
+
+    c.first_supyoer_id = @first_supyoer.id
+    c.second_supyoer_id = @second_supyoer.id
+    if params[:state]
+      c.state = params[:state]
+    end
+
+    if c.save
+      {
+        :success =>{
+          :conversation => c
+        }
+      }.to_json
+    else
+      {
+        :error =>c.errors
+      }.to_json
+    end
+
   end
 
 end
