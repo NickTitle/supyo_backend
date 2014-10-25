@@ -61,6 +61,7 @@ module Supyo
   end
 
   get 'request_token' do
+    halt 401 if Supyoer.select{|s| s.phone_hash == params[:nonce]}.empty?
     t = Token.first_or_create(:phone_hash=>params[:nonce])
     t.name
   end
