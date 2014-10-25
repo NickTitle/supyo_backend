@@ -4,13 +4,11 @@ class Supyoer
   include DataMapper::Resource
 
   property :id, Serial
-  property :name, String, :unique => true, :required => true
-  property :email, String, :unique => true
-  property :phone_hash, String, :unique => true
-  property :password_hash, String
-  property :last_location_lat, Float
-  property :last_location_long, Float
-  property :last_location_time, DateTime
+  property :name,                 String, :unique   => true, :required => true
+  property :phone_hash,           String, :unique   => true
+  property :password_hash,        String
+  property :latitude,             Float
+  property :longitude,            Float
 
   def self.hash_val(val)
   	return Digest::SHA2.hexdigest(val.to_s+ENV['SALT'])

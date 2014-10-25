@@ -3,7 +3,6 @@
 100.times do
 	s = Supyoer.create
 	s.name = Faker::Lorem.word+Faker::Number.number(5)
-	s.email = Faker::Internet.safe_email(s.name)
 	s.phone_hash = Supyoer.hash_val(Faker::Number.number(10))
 	s.password_hash = Supyoer.hash_val(Faker::Lorem.characters((6..12).to_a.sample))
 

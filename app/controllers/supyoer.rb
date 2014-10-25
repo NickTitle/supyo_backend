@@ -80,13 +80,12 @@ Supyo::App.controllers :supyoer do
 
     c = Conversation.new
 
-    puts Supyoer.get(params[:id])
-    puts params
     @first_supyoer = Supyoer.get(params[:id])
     @second_supyoer = Supyoer.get(params[:recipient])
 
     c.first_supyoer_id = @first_supyoer.id
     c.second_supyoer_id = @second_supyoer.id
+    
     if params[:state]
       c.state = params[:state]
     end
@@ -102,7 +101,45 @@ Supyo::App.controllers :supyoer do
         :error =>c.errors
       }.to_json
     end
+  end
 
+  post :share_location, :csrf_protection => false do
+    
+    location_request = JSON.parse(request.body.read)
+    
+    unless  
+      location_request['latitude']      and
+      location_request['longitude']     and
+      location_request['sharing_id']    and
+      location_request['shared_to_id']
+      return { :error =>"Missing location or user info" }.to_json
+    end
+
+    sharing_supyoer           = Supyoer.get(location_request['sharing_id'])
+    sharing_supyoer.latitude  = location_request['latitude']
+    sharing_supyoer.longitude = location_request['longitude']
+    sharing_supyoer.broadcast = location_request['broadcast'] if location_request['broadcast']
+
+    unless sharing_supyoer.save
+      return { :error =>sharing_supyoer.errors}.to_json
+    end
+
+    sl = SharedLocation.new
+    
+    sl.sharing_supyoer_id   = location_request['sharing_id']
+    sl.shared_to_supyoer_id = location_request['shared_to_id'] if location_request['shared_to_id']
+
+    if sl.save
+      {
+        :success =>{
+          :shared_location => sl
+        }
+      }.to_json
+    else
+      {
+        :error =>sl.errors
+      }.to_json
+    end
   end
 
 end
