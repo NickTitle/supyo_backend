@@ -38,8 +38,12 @@ class Supyoer
     found_supyoers.map {|s| s.returned_supyoer_hash}
   end
 
-  def returned_supyoer_hash
-    return {:id =>self.id, :name => self.name}
+  def returned_supyoer_hash(supyoer=nil)
+    if supyoer and !SharedLocation.select{|sl| sl.sharing_supyoer_id == id && sl.shared_to_supyoer_id == supyoer.id}.empty?
+      return {:id =>self.id, :name =>self.name, :latitude =>self.latitude, :longitude=>self.longitude}
+    else
+      return {:id =>self.id, :name => self.name}
+    end
   end
 
 end

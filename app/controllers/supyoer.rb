@@ -48,32 +48,18 @@ Supyo::App.controllers :supyoer do
         :error =>s.errors
       }.to_json
     end
-  end
+  end  
 
   #
   # return Array<[contact id, contact id]>
   #
-  post :update_contacts, :with => :id,  :csrf_protection => false do
+  post :update_contacts, :csrf_protection => false do
     @phone_hash_array = JSON.parse(request.body.read)
 
-    @supyoer = Supyoer.get(params[:id].to_i)
-    @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array)
-  end
+    @supyoer = Supyoer.get(@phone_hash_array['id'].to_i)
+    @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array['contacts'])
 
-  get :contact_list, :with =>:id do
-    @supyoer = Supyoer.get(params[:id].to_i)
-    content_type :json
-    unless @supyoer == nil
-      @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
-    end
-  end
-  
-  get :conversations, :with => :id do
-    @supyoer = Supyoer.get(params[:id].to_i)
-    content_type :json
-    unless @supyoer == nil
-      @supyoer.conversations.select{|c| c.created_at > DateTime.now-2}.to_json
-    end
+    @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
   end
 
   post :conversation, :csrf_protection => false do
@@ -139,6 +125,33 @@ Supyo::App.controllers :supyoer do
       {
         :error =>sl.errors
       }.to_json
+    end
+  end
+
+  get :contact_list, :with =>:id do
+    @supyoer = Supyoer.get(params[:id].to_i)
+    content_type :json
+    unless @supyoer == nil
+      @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
+    end
+  end
+  
+  get :conversations, :with => :id do
+    @supyoer = Supyoer.get(params[:id].to_i)
+    content_type :json
+    unless @supyoer == nil
+      @supyoer.conversations.select{|c| c.created_at > DateTime.now-2}.to_json
+    end
+  end
+
+  get :locations, :with => :id do
+    @supyoer = Supyoer.get(params[:id].to_i)
+    puts @supyoer
+    content_type :json
+    unless @supyoer == nil
+      sharing_contact_ids = SharedLocation.select{|s| s.shared_to_supyoer_id == @supyoer.id}.map{|sl| sl.sharing_supyoer_id}
+      found_contacts = Supyoer.select{|s| sharing_contact_ids.include?(s.id)}
+      found_contacts.map{|f| f.returned_supyoer_hash(@supyoer)}.to_json
     end
   end
 
