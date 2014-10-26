@@ -1,5 +1,3 @@
-require 'Digest'
-
 class SharedLocation
   include DataMapper::Resource
 

@@ -24,10 +24,6 @@ Supyo::App.controllers :supyoer do
   #   'Maps to url '/foo/#{params[:id]}''
   # end
 
-  # get '/example' do
-  #   'Hello world!'
-  # end
-
   post :create_user, :csrf_protection => false do
     @user_hash            = JSON.parse(request.body.read)
 

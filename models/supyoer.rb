@@ -1,5 +1,3 @@
-require 'Digest'
-
 class Supyoer
   include DataMapper::Resource
 

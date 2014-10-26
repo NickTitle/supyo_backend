@@ -26,6 +26,7 @@ gem 'dm-core'
 gem 'dm-serializer'
 
 gem 'faker'
+gem 'digest'
 
 # Test requirements
 

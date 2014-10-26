@@ -53,15 +53,13 @@ module Supyo
   #     disable :asset_stamp # no asset timestamping for dev
   #   end
   #
-
-  before do
-    unless Supyo::Validator.validate_request(params[:nonce], params[:hash])
-      halt 401
-    end
+  
+  get '/' do
+    'Hello world!'
   end
 
   get 'request_token' do
-    halt 401 if Supyoer.select{|s| s.phone_hash == params[:nonce]}.empty?
+    # halt 401 if Supyoer.select{|s| s.phone_hash == params[:nonce]}.empty?
     t = Token.first_or_create(:phone_hash=>params[:nonce])
     t.name
   end
