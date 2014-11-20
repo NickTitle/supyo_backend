@@ -29,7 +29,6 @@ Supyo::App.controllers :supyoer do
 
     s                   = Supyoer.new
     s.name              = @user_hash["name"]
-    s.email             = @user_hash["email"]
     s.phone_hash        = Supyoer.hash_val(@user_hash["phone"])
     s.password_hash     = Supyoer.hash_val(@user_hash["password"])
 
