@@ -24,8 +24,22 @@ Supyo::App.controllers :supyoer do
   #   'Maps to url '/foo/#{params[:id]}''
   # end
 
-  post :create_user, :csrf_protection => false do
+  post :create_user, :csrf_protection => false do    
     @user_hash            = JSON.parse(request.body.read)
+
+    token_val = @user_hash["auth_token"]
+    auth_token = AuthToken.first(:name=>token_val)
+
+    puts token_val
+    puts auth_token
+
+    unless auth_token && auth_token.is_valid?
+    return  {
+        :error =>{:token => {"auth token is expired or invalid" => "true"} }
+      }.to_json
+    end
+
+    auth_token.destroy
 
     s                   = Supyoer.new
     s.name              = @user_hash["name"]
@@ -35,7 +49,8 @@ Supyo::App.controllers :supyoer do
     if s.save
       {
         :success =>{
-          :user => s
+          :user => s.returned_supyoer_hash,
+          :token => Token.first_or_create(:phone_hash => s.phone_hash)
         }
       }.to_json
     else
@@ -44,6 +59,39 @@ Supyo::App.controllers :supyoer do
       }.to_json
     end
   end  
+
+  post :login, :csrf_protection => false do
+    @user_hash            = JSON.parse(request.body.read)
+    
+    token_val = @user_hash["auth_token"]
+    auth_token = AuthToken.first(:name=>token_val)
+
+    puts token_val
+    puts auth_token
+
+    unless auth_token && auth_token.is_valid?
+    return  {
+        :error =>{:token => {"auth token is expired or invalid" => "true"} }
+      }.to_json
+    end
+
+    auth_token.destroy
+
+    s = Supyoer.first(:name=>@user_hash['name'], :password_hash=>Supyoer.hash_val(@user_hash["password"]))
+
+    if s
+      {
+        :success =>{
+          :user => s.returned_supyoer_hash,
+          :token => Token.first_or_create(:phone_hash => s.phone_hash)
+        }
+      }.to_json
+    else
+      return  {
+        :error =>{:token => {"invalid user or password" => "true"} }
+      }.to_json
+    end
+  end
 
   #
   # return Array<[contact id, contact id]>

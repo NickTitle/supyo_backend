@@ -53,14 +53,13 @@ module Supyo
   #     disable :asset_stamp # no asset timestamping for dev
   #   end
   #
-  
+
   get '/' do
     'Hello world!'
   end
 
-  get 'request_token' do
-    # halt 401 if Supyoer.select{|s| s.phone_hash == params[:nonce]}.empty?
-    t = Token.first_or_create(:phone_hash=>params[:nonce])
+  get 'request_login_token' do
+    t = AuthToken.create
     t.name
   end
 
