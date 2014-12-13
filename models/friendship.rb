@@ -1,7 +1,7 @@
 class Friendship
   include DataMapper::Resource
 
-  property :id,         Serial
+  property :id,                  Serial
   property :first_supyoer_id,   Integer,  :required => true
   property :second_supyoer_id,  Integer,  :required => true,
                                           :unique   => :first_supyoer_id
