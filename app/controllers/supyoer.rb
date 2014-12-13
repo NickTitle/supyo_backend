@@ -3,32 +3,12 @@ Supyo::App.controllers :supyoer do
   require 'dm-serializer'
   require 'json'
 
-  before do
-    unless Supyo::Validator.validate_request(params[:nonce], params[:hash])
-      halt 401
-    end
-  end
+  post :create_user, :csrf_protection => false do
+    
+    @user_hash  = JSON.parse(request.body.read)
 
-  # get :index, :map => '/foo/bar' do
-  #   session[:foo] = 'bar'
-  #   render 'index'
-  # end
-
-  # get :sample, :map => '/sample/url', :provides => [:any, :js] do
-  #   case content_type
-  #     when :js then ...
-  #     else ...
-  # end
-
-  # get :foo, :with => :id do
-  #   'Maps to url '/foo/#{params[:id]}''
-  # end
-
-  post :create_user, :csrf_protection => false do    
-    @user_hash            = JSON.parse(request.body.read)
-
-    token_val = @user_hash["auth_token"]
-    auth_token = AuthToken.first(:name=>token_val)
+    token_val   = @user_hash["auth_token"]
+    auth_token  = AuthToken.first(:name=>token_val)
 
     puts token_val
     puts auth_token
@@ -61,13 +41,11 @@ Supyo::App.controllers :supyoer do
   end  
 
   post :login, :csrf_protection => false do
-    @user_hash            = JSON.parse(request.body.read)
     
-    token_val = @user_hash["auth_token"]
-    auth_token = AuthToken.first(:name=>token_val)
-
-    puts token_val
-    puts auth_token
+    @user_hash  = JSON.parse(request.body.read)
+    
+    token_val   = @user_hash["auth_token"]
+    auth_token  = AuthToken.first(:name=>token_val)
 
     unless auth_token && auth_token.is_valid?
     return  {
@@ -99,14 +77,21 @@ Supyo::App.controllers :supyoer do
   post :update_contacts, :csrf_protection => false do
     @phone_hash_array = JSON.parse(request.body.read)
 
-    @supyoer = Supyoer.get(@phone_hash_array['id'].to_i)
-    @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array['contacts'])
-
-    @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
+    @supyoer = Supyoer.get(params[:user_id].to_i)
+    new_contacts = @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array['contacts'])
+    if new_contacts
+      {
+        :success => {:new_contact_count => new_contacts}
+      }.to_json
+    else
+      {
+        :error =>s.errors
+      }.to_json
+    end
   end
 
   post :conversation, :csrf_protection => false do
-
+    validate
     c = Conversation.new
 
     @first_supyoer = Supyoer.get(params[:id])
@@ -133,7 +118,7 @@ Supyo::App.controllers :supyoer do
   end
 
   post :share_location, :csrf_protection => false do
-    
+    validate
     location_request = JSON.parse(request.body.read)
     
     unless  
@@ -171,30 +156,12 @@ Supyo::App.controllers :supyoer do
     end
   end
 
-  get :contact_list, :with =>:id do
-    @supyoer = Supyoer.get(params[:id].to_i)
+  get :friends do
+    validate_get
+    @supyoer = Supyoer.get(params[:user_id].to_i)
     content_type :json
     unless @supyoer == nil
-      @supyoer.following.map{|f| f.returned_supyoer_hash }.to_json
-    end
-  end
-  
-  get :conversations, :with => :id do
-    @supyoer = Supyoer.get(params[:id].to_i)
-    content_type :json
-    unless @supyoer == nil
-      @supyoer.conversations.select{|c| c.created_at > DateTime.now-2}.to_json
-    end
-  end
-
-  get :locations, :with => :id do
-    @supyoer = Supyoer.get(params[:id].to_i)
-    puts @supyoer
-    content_type :json
-    unless @supyoer == nil
-      sharing_contact_ids = SharedLocation.select{|s| s.shared_to_supyoer_id == @supyoer.id}.map{|sl| sl.sharing_supyoer_id}
-      found_contacts = Supyoer.select{|s| sharing_contact_ids.include?(s.id)}
-      found_contacts.map{|f| f.returned_supyoer_hash(@supyoer)}.to_json
+      @supyoer.following.map{|f| CompleteSupyoer.supyoer_extended_info(f, @supyoer)}.to_json
     end
   end
 

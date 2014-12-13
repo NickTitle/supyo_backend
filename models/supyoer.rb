@@ -7,6 +7,7 @@ class Supyoer
   property :password_hash,        String
   property :latitude,             Float
   property :longitude,            Float
+  property :created_at,           DateTime
 
   def self.hash_val(val)
   	return Digest::SHA2.hexdigest(val.to_s+ENV['SALT'])
@@ -25,6 +26,7 @@ class Supyoer
   end
 
   def generate_contacts_from_phone_hash_array(phone_hash_array)
+    now = DateTime.now.to_time.to_f
     found_supyoers = Supyoer.all(:phone_hash => phone_hash_array)
     found_supyoers.each do |supyoer|
       f = Friendship.new
@@ -32,8 +34,11 @@ class Supyoer
       f.second_supyoer_id = supyoer.id
       f.save
     end
-
-    found_supyoers.map {|s| s.returned_supyoer_hash}
+    if found_supyoers.count > 0
+      found_supyoers.select{|f| f.created_at.to_f > now}.count
+    else
+      0
+    end
   end
 
   def returned_supyoer_hash(supyoer=nil)
@@ -42,6 +47,25 @@ class Supyoer
     else
       return {:id =>self.id, :name => self.name}
     end
+  end
+
+  # if you person shared your location with 'supyoer', get the object back provided it hasn't expired
+  # if it expires we destroy the object
+  def is_sharing_location_with_supyoer(supyoer)
+    shared_location = SharedLocation.first(:sharing_supyoer_id=> id, :shared_to_supyoer_id=>supyoer.id)
+    
+    return false unless shared_location
+    
+    if shared_location.is_expired
+      shared_location.destroy
+      return false
+    end
+
+    return true
+  end
+
+  def user_token
+    return Token.first(:phone_hash=>phone_hash)
   end
 
 end

@@ -58,7 +58,7 @@ module Supyo
     'Hello world!'
   end
 
-  get 'request_login_token' do
+  get 'request_auth_token' do
     t = AuthToken.create
     t.name
   end

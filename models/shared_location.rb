@@ -12,4 +12,8 @@ class SharedLocation
   property :expires_at,           DateTime, :default  => lambda { |r, p| (Time.now + 10800)}
   property :broadcast,            Boolean,  :default  => false
 
+
+  def is_expired
+    DateTime.now > expires_at
+  end
 end
