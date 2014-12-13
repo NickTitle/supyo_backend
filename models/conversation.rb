@@ -13,7 +13,9 @@ class Conversation
   validates_with_method :check_existence
 
   def check_existence
-    return false if Conversation.conversation_between_users(Supyoer.get(self.first_supyoer_id), Supyoer.get(self.second_supyoer_id))
+    if Conversation.conversation_between_users(Supyoer.get(self.first_supyoer_id), Supyoer.get(self.second_supyoer_id))
+      return [ false, "Conversation already exists" ]
+    end
     return true
   end
 

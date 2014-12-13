@@ -28,16 +28,19 @@ class Supyoer
   def generate_contacts_from_phone_hash_array(phone_hash_array)
     now = DateTime.now.to_time.to_f
     found_supyoers = Supyoer.all(:phone_hash => phone_hash_array)
+    new_friendships = []
     found_supyoers.each do |supyoer|
       f = Friendship.new
       f.first_supyoer_id  = self.id
       f.second_supyoer_id = supyoer.id
-      f.save
+      if f.save
+        new_friendships << supyoer.name
+      end
     end
-    if found_supyoers.count > 0
-      found_supyoers.select{|f| f.created_at.to_f > now}.count
+    if new_friendships.count > 0
+      new_friendships
     else
-      0
+      []
     end
   end
 
@@ -50,7 +53,7 @@ class Supyoer
   end
 
   # if you person shared your location with 'supyoer', get the object back provided it hasn't expired
-  # if it expires we destroy the object
+  # if it expires we destroy thwe object
   def is_sharing_location_with_supyoer(supyoer)
     shared_location = SharedLocation.first(:sharing_supyoer_id=> id, :shared_to_supyoer_id=>supyoer.id)
     

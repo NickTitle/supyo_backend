@@ -81,7 +81,7 @@ Supyo::App.controllers :supyoer do
     new_contacts = @supyoer.generate_contacts_from_phone_hash_array(@phone_hash_array['contacts'])
     if new_contacts
       {
-        :success => {:new_contact_count => new_contacts}
+        :success => {:new_contacts => new_contacts}
       }.to_json
     else
       {
