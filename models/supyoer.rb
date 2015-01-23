@@ -4,6 +4,7 @@ class Supyoer
   property :id, Serial
   property :name,                 String, :unique   => true, :required => true
   property :phone_hash,           String, :unique   => true
+  property :hue,                  Float,  :default  => lambda{|r,p| rand(360000)/100.0 }
   property :password_hash,        String
   property :latitude,             Float
   property :longitude,            Float

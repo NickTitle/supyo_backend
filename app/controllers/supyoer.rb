@@ -75,6 +75,8 @@ Supyo::App.controllers :supyoer do
   # return Array<[contact id, contact id]>
   #
   post :update_contacts, :csrf_protection => false do
+    validate
+    request.body.rewind
     @phone_hash_array = JSON.parse(request.body.read)
 
     @supyoer = Supyoer.get(params[:user_id].to_i)
@@ -91,11 +93,16 @@ Supyo::App.controllers :supyoer do
   end
 
   post :conversation, :csrf_protection => false do
+
     validate
+    request.body.rewind
+    @conversation_hash = JSON.parse(request.body.read)
+
     c = Conversation.new
 
-    @first_supyoer = Supyoer.get(params[:id])
-    @second_supyoer = Supyoer.get(params[:recipient])
+    puts @conversation_hash[:recipient]
+    @first_supyoer = Supyoer.get(@conversation_hash['id'])
+    @second_supyoer = Supyoer.get(@conversation_hash['recipient'])
 
     c.first_supyoer_id = @first_supyoer.id
     c.second_supyoer_id = @second_supyoer.id
@@ -163,6 +170,12 @@ Supyo::App.controllers :supyoer do
     unless @supyoer == nil
       @supyoer.following.map{|f| CompleteSupyoer.supyoer_extended_info(f, @supyoer)}.to_json
     end
+  end
+
+  get :check_token do
+    validate_get
+    content_type :json
+    {:success=>"token valid"}.to_json
   end
 
 end

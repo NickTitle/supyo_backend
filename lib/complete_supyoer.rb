@@ -20,14 +20,15 @@ module CompleteSupyoer
 
     return {
       :supyoer => {
-        :user_ID => supyoer.id,
-        :user_name => supyoer.name,
-        :is_favorite => friendship.is_favorite,
+        :user_ID                  => supyoer.id,
+        :user_name                => supyoer.name,
+        :hue                      => supyoer.hue,
+        :is_favorite              => friendship.is_favorite,
         :is_receiving_my_location => requester.is_sharing_location_with_supyoer(supyoer),
-        :conversation_state => conversation_state,
-        :did_update_last => did_update_last,
-        :latitude => latitude,
-        :longitude => longitude
+        :conversation_state       => conversation_state,
+        :did_update_last          => did_update_last,
+        :latitude                 => latitude,
+        :longitude                => longitude
       }
     }
   end
